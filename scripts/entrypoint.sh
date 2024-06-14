@@ -1,14 +1,9 @@
-#!/bin/sh
+#!/bin/bash
+set -e
 
-# Function to check if the database schema exists
-check_db_schema() {
-  PGPASSWORD=$SPRING_DATASOURCE_PASSWORD psql -h $SPRING_DATASOURCE_URL -U $SPRING_DATASOURCE_USERNAME -d $SPRING_DATASOURCE_DBNAME -c '\dt' | grep -q 'No relations found'
-  return $?
-}
-
-# Initialize the database schema if it doesn't exist
-if check_db_schema; then
-  echo "Database schema not found, running Flyway migrations..."
+# Check if the database schema already exists
+if psql -h $RENDER_DB_HOST -U $RENDER_DB_USERNAME -d $RENDER_DB_NAME -c '\dt' | grep -q 'No relations found.'; then
+  echo "Database schema does not exist. Running Flyway migrations..."
   mvn flyway:migrate
 else
   echo "Database schema already exists, skipping Flyway migrations..."
