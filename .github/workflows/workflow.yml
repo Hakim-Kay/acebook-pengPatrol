@@ -14,17 +14,6 @@ jobs:
 
     runs-on: ubuntu-latest
 
-    services:
-      postgres:
-        image: postgres:latest
-        ports:
-          - 5432:5432
-        options: >-
-          --health-cmd "pg_isready" 
-          --health-interval 10s 
-          --health-timeout 5s 
-          --health-retries 5
-
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
@@ -49,25 +38,35 @@ jobs:
           sudo mv chromedriver /usr/local/bin/
           sudo chmod +x /usr/local/bin/chromedriver
 
-      - name: Pull Docker image
-        run: docker pull mhk1/acebook_penguins
+      - name: Build Docker image
+        run: |
+          docker build -t mhk1/acebook_penguins:latest .
+          docker tag mhk1/acebook_penguins:latest mhk1/acebook_penguins:${{ github.sha }}
+
+      - name: Login to Docker Hub
+        run: echo "${{ secrets.DOCKER_HUB_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_HUB_USERNAME }}" --password-stdin
+
+      - name: Push Docker image
+        run: |
+          docker push mhk1/acebook_penguins:latest
+          docker push mhk1/acebook_penguins:${{ github.sha }}
+
+      - name: Run Docker container
+        run: |
+          docker run -d --name acebook_penguins -p 5432:5432 -p 8080:8080 mhk1/acebook_penguins:latest
+          sleep 30
 
       - name: Run unit tests
-        env:
-          SPRING_DATASOURCE_URL: jdbc:postgresql://localhost:5432/acebook_springboot_development
-          SPRING_DATASOURCE_USERNAME: postgres
-          SPRING_DATASOURCE_PASSWORD: postgres
         run: mvn test -Dtest=PostTest
-
-      - name: Run the application
-        env:
-          SPRING_DATASOURCE_URL: jdbc:postgresql://localhost:5432/acebook_springboot_development
-          SPRING_DATASOURCE_USERNAME: postgres
-          SPRING_DATASOURCE_PASSWORD: postgres
-        run: mvn spring-boot:run &
 
       - name: Health check
         run: |
           echo "Waiting for the application to start..."
           sleep 30
           curl -f http://localhost:8080 || exit 1
+
+      - name: Stop Docker container
+        run: docker stop acebook_penguins
+
+      - name: Remove Docker container
+        run: docker rm acebook_penguins
