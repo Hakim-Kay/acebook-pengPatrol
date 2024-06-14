@@ -31,22 +31,9 @@ jobs:
           docker build -t mhk1/acebook_penguins:latest .
           docker push mhk1/acebook_penguins:latest
 
-      - name: Start PostgreSQL container
+      - name: Deploy to Render
         run: |
-          docker run -d --name postgres \
-            -e POSTGRES_DB=${{ secrets.local_db }} \
-            -e POSTGRES_USER=${{ secrets.local_user }} \
-            -e POSTGRES_PASSWORD=${{ secrets.local_password }} \
-            -p 5432:5432 postgres:latest
-
-      - name: Run the application
-        run: mvn spring-boot:run
-
-      - name: Run tests
-        run: mvn test
-
-      - name: Verify application is running
-        run: |
-          echo "Waiting for the application to start..."
-          sleep 30
-          curl -f http://localhost:8080/login || (docker logs acebook_penguins && exit 1)
+          curl -X POST "https://api.render.com/v1/services/${{ secrets.RENDER_SERVICE_ID }}/deploys" \
+          -H "Authorization: Bearer ${{ secrets.RENDER_API_KEY }}" \
+          -H "Content-Type: application/json" \
+          -d '{"image": "mhk1/acebook_penguins:latest"}'

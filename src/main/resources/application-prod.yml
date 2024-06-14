@@ -1,0 +1,7 @@
+spring:
+datasource:
+url: ${RENDER_DB_URL}
+username: ${RENDER_DB_USERNAME}
+password: ${RENDER_DB_PASSWORD}
+flyway:
+enabled: true
