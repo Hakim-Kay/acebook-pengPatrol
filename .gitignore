@@ -9,4 +9,5 @@ dependency-reduced-pom.xml
 .factorypath
 .project
 .settings/
+/src/main/java/com/makersacademy/acebook/config/EnvVariableConfig.java
 .DS_STORE
