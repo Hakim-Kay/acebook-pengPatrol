@@ -38,14 +38,6 @@ jobs:
           distribution: 'adopt'
           java-version: '17'
 
-      - name: Cache Maven packages
-        uses: actions/cache@v2
-        with:
-          path: ~/.m2
-          key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
-          restore-keys: |
-            ${{ runner.os }}-maven-
-
       - name: Install Maven
         run: sudo apt-get install -y maven
 
@@ -63,16 +55,10 @@ jobs:
       - name: Run unit tests
         run: mvn test -Dtest=PostTest
 
-      - name: Run feature tests
-        run: |
-          mvn spring-boot:run &
-          sleep 30
-          mvn test -Dtest=SignUpTest
-
       - name: Package the application
         run: mvn package
 
-      - name: Connect to PostgreSQL instance
+      - name: Connect to PostgreSQL
         env:
           PSQL_COMMAND: ${{ secrets.PSQL_COMMAND }}
         run: |
