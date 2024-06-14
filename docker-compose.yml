@@ -1,0 +1,30 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:latest
+    container_name: local_postgres
+    environment:
+      POSTGRES_DB: jdbc:postgresql://localhost:5432/acebook_springboot_development
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  app:
+    image: mhk1/acebook_penguins:latest
+    container_name: acebook_penguins
+    depends_on:
+      - postgres
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/${local_db}
+      SPRING_DATASOURCE_USERNAME: ${local_user}
+      SPRING_DATASOURCE_PASSWORD: ${local_password}
+    ports:
+      - "8080:8080"
+    command: ["mvn", "spring-boot:run"]
+
+volumes:
+  postgres_data:
