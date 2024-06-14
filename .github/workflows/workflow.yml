@@ -52,7 +52,7 @@ jobs:
           context: .
           file: ./Dockerfile
           push: true
-          tags: ${{ secrets.DOCKER_USERNAME }}/acebook_penguins:latest
+          tags: mhk1/acebook_penguins:latest
 
       - name: Run Docker container
         run: |
