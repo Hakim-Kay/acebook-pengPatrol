@@ -39,16 +39,14 @@ jobs:
             -e POSTGRES_PASSWORD=${{ secrets.local_password }} \
             -p 5432:5432 postgres:latest
 
-      - name: Build the application
-        run: mvn clean install
+      - name: Run the application
+        run: mvn spring-boot:run
 
       - name: Run tests
         run: mvn test
 
-      - name: Run application and verify
+      - name: Verify application is running
         run: |
-          docker run -d --name acebook_penguins \
-            -p 8080:8080 mhk1/acebook_penguins:latest
           echo "Waiting for the application to start..."
           sleep 30
           curl -f http://localhost:8080/login || (docker logs acebook_penguins && exit 1)
