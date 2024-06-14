@@ -56,7 +56,7 @@ jobs:
 
       - name: Run Docker container
         run: |
-          docker run -d --name acebook_penguins -p 5432:5432 -p 8080:8080 ${{ secrets.DOCKER_USERNAME }}/acebook_penguins:latest
+          docker run -d --name acebook_penguins -p 5432:5432 -p 8080:8080 mhk1/acebook_penguins:latest
           sleep 30
 
       - name: Run unit tests
