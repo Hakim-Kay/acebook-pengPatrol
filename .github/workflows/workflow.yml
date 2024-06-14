@@ -57,11 +57,15 @@ jobs:
 
       - name: Connect to PostgreSQL
         env:
-          PSQL_COMMAND: ${{ secrets.PSQL_COMMAND }}
+          PGPASSWORD: ${{ secrets.RENDER_DB_PASSWORD }}
         run: |
-          $PSQL_COMMAND -c '\l'
+          psql -h <RENDER_DB_HOST> -U <RENDER_DB_USERNAME> -d <RENDER_DB_NAME> -c '\l'
 
       - name: Run the application
+        env:
+          SPRING_DATASOURCE_URL: ${{ secrets.RENDER_DB_URL }}
+          SPRING_DATASOURCE_USERNAME: ${{ secrets.RENDER_DB_USERNAME }}
+          SPRING_DATASOURCE_PASSWORD: ${{ secrets.RENDER_DB_PASSWORD }}
         run: mvn spring-boot:run &
 
       - name: Health check
