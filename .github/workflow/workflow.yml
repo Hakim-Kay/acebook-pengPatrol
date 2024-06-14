@@ -1,0 +1,82 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - main
+      - test-ci-cd-workflow
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:latest
+        ports:
+          - 5432:5432
+        env:
+          POSTGRES_DB: acebook_springboot_development
+          POSTGRES_HOST_AUTH_METHOD: trust
+        options: >-
+          --health-cmd "pg_isready" 
+          --health-interval 10s 
+          --health-timeout 5s 
+          --health-retries 5
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v2
+        with:
+          distribution: 'adopt'
+          java-version: '17'
+
+      - name: Cache Maven packages
+        uses: actions/cache@v2
+        with:
+          path: ~/.m2
+          key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
+          restore-keys: |
+            ${{ runner.os }}-maven-
+
+      - name: Install Maven
+        run: sudo apt-get install -y maven
+
+      - name: Install dependencies
+        run: mvn install -DskipTests
+
+      - name: Set up Chromedriver
+        run: |
+          sudo apt-get install -y wget unzip
+          wget https://chromedriver.storage.googleapis.com/114.0.5735.90/chromedriver_linux64.zip
+          unzip chromedriver_linux64.zip
+          sudo mv chromedriver /usr/local/bin/
+          sudo chmod +x /usr/local/bin/chromedriver
+
+      - name: Run unit tests
+        run: mvn test -Dtest=PostTest
+
+      - name: Run feature tests
+        run: |
+          mvn spring-boot:run &
+          sleep 30
+          mvn test -Dtest=SignUpTest
+
+      - name: Package the application
+        run: mvn package
+
+      - name: Run the application
+        run: mvn spring-boot:run &
+
+      - name: Health check
+        run: |
+          echo "Waiting for the application to start..."
+          sleep 30
+          curl -f http://localhost:8080 || exit 1
