@@ -24,6 +24,10 @@ RUN mvn clean install -DskipTests
 # Use an official openjdk image to run the application
 FROM openjdk:17-jdk-slim
 
+# Install dependencies including PostgreSQL client and Maven
+RUN apt-get update && \
+    apt-get install -y postgresql-client maven
+
 # Set the working directory
 WORKDIR /app
 
