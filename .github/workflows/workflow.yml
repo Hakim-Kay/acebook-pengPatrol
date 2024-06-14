@@ -19,9 +19,6 @@ jobs:
         image: postgres:latest
         ports:
           - 5432:5432
-        env:
-          POSTGRES_DB: acebook_springboot_development
-          POSTGRES_HOST_AUTH_METHOD: trust
         options: >-
           --health-cmd "pg_isready" 
           --health-interval 10s 
@@ -52,20 +49,21 @@ jobs:
           sudo mv chromedriver /usr/local/bin/
           sudo chmod +x /usr/local/bin/chromedriver
 
-      - name: Run unit tests
-        run: mvn test -Dtest=PostTest
+      - name: Pull Docker image
+        run: docker pull mhk1/acebook_penguins
 
-      - name: Connect to PostgreSQL
+      - name: Run unit tests
         env:
-          PGPASSWORD: ${{ secrets.RENDER_DB_PASSWORD }}
-        run: |
-          psql -h <RENDER_DB_HOST> -U <RENDER_DB_USERNAME> -d <RENDER_DB_NAME> -c '\l'
+          SPRING_DATASOURCE_URL: jdbc:postgresql://localhost:5432/acebook_springboot_development
+          SPRING_DATASOURCE_USERNAME: postgres
+          SPRING_DATASOURCE_PASSWORD: postgres
+        run: mvn test -Dtest=PostTest
 
       - name: Run the application
         env:
-          SPRING_DATASOURCE_URL: ${{ secrets.RENDER_DB_URL }}
-          SPRING_DATASOURCE_USERNAME: ${{ secrets.RENDER_DB_USERNAME }}
-          SPRING_DATASOURCE_PASSWORD: ${{ secrets.RENDER_DB_PASSWORD }}
+          SPRING_DATASOURCE_URL: jdbc:postgresql://localhost:5432/acebook_springboot_development
+          SPRING_DATASOURCE_USERNAME: postgres
+          SPRING_DATASOURCE_PASSWORD: postgres
         run: mvn spring-boot:run &
 
       - name: Health check
