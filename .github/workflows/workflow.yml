@@ -37,22 +37,26 @@ jobs:
           sudo mv chromedriver /usr/local/bin/
           sudo chmod +x /usr/local/bin/chromedriver
 
-      - name: Build Docker image
-        run: |
-          docker build -t mhk1/acebook_penguins:latest .
-          docker tag mhk1/acebook_penguins:latest mhk1/acebook_penguins:${{ github.sha }}
-
       - name: Login to Docker Hub
-        run: echo "${{ secrets.DOCKERHUB_TOKEN }}" | docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-      - name: Push Docker image
-        run: |
-          docker push mhk1/acebook_penguins:latest
-          docker push mhk1/acebook_penguins:${{ github.sha }}
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build and push
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: ./Dockerfile
+          push: true
+          tags: ${{ secrets.DOCKER_USERNAME }}/acebook_penguins:latest
 
       - name: Run Docker container
         run: |
-          docker run -d --name acebook_penguins -p 5432:5432 -p 8080:8080 mhk1/acebook_penguins:latest
+          docker run -d --name acebook_penguins -p 5432:5432 -p 8080:8080 ${{ secrets.DOCKER_USERNAME }}/acebook_penguins:latest
           sleep 30
 
       - name: Run unit tests
