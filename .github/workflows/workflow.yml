@@ -55,9 +55,6 @@ jobs:
       - name: Run unit tests
         run: mvn test -Dtest=PostTest
 
-      - name: Package the application
-        run: mvn package
-
       - name: Connect to PostgreSQL
         env:
           PSQL_COMMAND: ${{ secrets.PSQL_COMMAND }}
