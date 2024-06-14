@@ -3,6 +3,7 @@ name: CI
 on:
   push:
     branches:
+      - main
       - test-ci-cd-workflow
   pull_request:
     branches:
@@ -10,6 +11,7 @@ on:
 
 jobs:
   build:
+
     runs-on: ubuntu-latest
 
     services:
@@ -19,8 +21,7 @@ jobs:
           - 5432:5432
         env:
           POSTGRES_DB: acebook_springboot_development
-          POSTGRES_USER: postgres
-          POSTGRES_PASSWORD: postgres
+          POSTGRES_HOST_AUTH_METHOD: trust
         options: >-
           --health-cmd "pg_isready" 
           --health-interval 10s 
@@ -36,11 +37,6 @@ jobs:
         with:
           distribution: 'adopt'
           java-version: '17'
-
-      - name: Create runner role in PostgreSQL
-        run: |
-          sudo apt-get install -y postgresql-client
-          PGPASSWORD=postgres psql -h localhost -U postgres -d acebook_springboot_development -c "CREATE ROLE runner WITH LOGIN PASSWORD 'password';"
 
       - name: Cache Maven packages
         uses: actions/cache@v2
@@ -75,6 +71,12 @@ jobs:
 
       - name: Package the application
         run: mvn package
+
+      - name: Connect to PostgreSQL instance
+        env:
+          PSQL_COMMAND: ${{ secrets.PSQL_COMMAND }}
+        run: |
+          $PSQL_COMMAND -c '\l'
 
       - name: Run the application
         run: mvn spring-boot:run &
