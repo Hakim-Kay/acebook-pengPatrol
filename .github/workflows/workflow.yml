@@ -28,8 +28,8 @@ jobs:
 
       - name: Build and push Docker image
         run: |
-            docker build -t my-image:latest .
-            docker push my-image:latest
+          docker build -t mhk1/acebook_penguins:latest .
+          docker push mhk1/acebook_penguins:latest
 
       - name: Start PostgreSQL container
         run: |
