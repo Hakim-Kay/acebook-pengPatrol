@@ -16,15 +16,10 @@ services:
   app:
     image: mhk1/acebook_penguins:latest
     container_name: acebook_penguins
-    depends_on:
-      - postgres
     environment:
-      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/${local_db}
-      SPRING_DATASOURCE_USERNAME: ${local_user}
-      SPRING_DATASOURCE_PASSWORD: ${local_password}
+      SPRING_DATASOURCE_URL: ${RENDER_DB_URL}
+      SPRING_DATASOURCE_USERNAME: ${RENDER_DB_USERNAME}
+      SPRING_DATASOURCE_PASSWORD: ${RENDER_DB_PASSWORD}
     ports:
       - "8080:8080"
-    command: ["mvn", "spring-boot:run"]
-
-volumes:
-  postgres_data:
+    command: [ "mvn", "spring-boot:run" ]
